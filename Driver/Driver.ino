@@ -1,6 +1,7 @@
 #include <FastLED.h>
 #include <FastLED_NeoMatrix.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include "Configuration.h"
 
 FastLED_NeoMatrix *matrix;
@@ -8,17 +9,67 @@ FastLED_NeoMatrix *matrix;
 int x;
 int pass = 0;
 char currString[] = "WE ARE OPEN";
+String host_url = "https://localhost:8080";
 
 void bottom_matrix_loop() {
+  Serial.println(x);
   matrix->fillScreen(0);
   matrix->setCursor(x, 4);
   matrix->setTextColor(0xFF);
   matrix->print(currString);
-  if(--x < -strlen(currString) * 6) {
+  if(--x < strlen(currString) * -6) {
     x = matrix->width();
   }
   delay(100);
 }
+
+String getQuote(String input_quote){
+    HTTPClient http;
+    String quote;
+    http.begin(host_url + "/quote/" + input_quote);
+    int httpCode = http.GET();
+    if (httpCode > 0) {
+        String payload = http.getString();
+        int start = payload.indexOf("quote");
+        int end = payload.length() - 2;
+        quote = payload.substring(start+8, end-3);
+    }
+    http.end();
+    return quote;
+}
+
+int * getCICSMatrix(String brightnessId, String colorId, String brightness){
+    int ans[] = {0, 0, 0, 0};
+    HTTPClient http;
+    HTTPClient http2;
+    http.begin(host_url + "/cics/brightness/" + brightnessId);
+    http2.begin(host_url + "/cics/color/" + colorId);
+    int httpCode = http.GET();
+    int i = 0;
+    if (httpCode > 0) {
+        String payload = http.getString();
+        int start = payload.indexOf("color") + 7;
+        int end = payload.length() - 1;
+        String color = payload.substring(start, end);
+        int index = color.indexOf(",");
+        while (index == -1){
+            ans[i] = color.substring(start, index).toInt();
+            i+=1;
+            index = color.indexOf(",", index+1);
+        }
+    }
+    http.end();
+    int httpCode2 = http2.GET();
+    if (httpCode2 > 0) {
+        String payload2 = http2.getString();
+        int start2 = payload2.indexOf("brightness") + 12;
+        int end2 = payload2.length() - 2;
+        ans[i] = payload2.substring(start2, end2).toInt();
+    }
+    http2.end();
+    return ans;
+}
+
 
 void setup() {
   Serial.begin(9600);
