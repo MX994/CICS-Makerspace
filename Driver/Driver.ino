@@ -17,8 +17,8 @@ void bottom_matrix_loop() {
   matrix->setCursor(x, 4);
   matrix->setTextColor(0xFF);
   matrix->print(currString);
-  if(--x < strlen(currString) * -6) {
-    x = matrix->width();
+  if (--x < strlen(currString) * -6) {
+    x = strlen(currString) * 6;
   }
   delay(100);
 }
