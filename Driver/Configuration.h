@@ -28,4 +28,23 @@ CRGB LEDS_STATUS[LED_STATUS_CNT];
 // URL to fetch data from.
 const char *SPMAKER_DATA_QUERY = "";
 
+// Work Struct
+typedef struct {
+  // Public members.
+  uint32_t CICS_COLOR;
+  uint32_t SPMAKER_COLOR;
+  uint32_t STATUS_COLOR;
+  char *STATUS_TEXT;
+  char BRIGHTNESS;  
+  // Internal;
+  int16_t STATUS_CURR_X;
+  int16_t STATUS_CURR_Y;
+  uint16_t STATUS_LENGTH;
+} SPMAKER_WK_STRUCT;
+
+// Other Private Variables.
+FastLED_NeoMatrix *Matrix;
+SPMAKER_WK_STRUCT *Wk;
+AsyncWebServer Server(80);
+
 #endif
