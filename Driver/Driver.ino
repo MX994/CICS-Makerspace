@@ -6,19 +6,19 @@
 
 FastLED_NeoMatrix *matrix;
 
-int x;
+int x = 0;
 int pass = 0;
-char currString[] = "WE ARE OPEN";
+int currStringLength;
+char *currString;
 String host_url = "https://localhost:8080";
 
 void bottom_matrix_loop() {
-  Serial.println(x);
   matrix->fillScreen(0);
   matrix->setCursor(x, 4);
   matrix->setTextColor(0xFF);
   matrix->print(currString);
-  if (--x < strlen(currString) * -6) {
-    x = strlen(currString) * 6;
+  if (--x < -currStringLength * 6) {
+    x = currStringLength * 6;
   }
   delay(100);
 }
@@ -38,7 +38,7 @@ String getQuote(String input_quote){
     return quote;
 }
 
-int * getCICSMatrix(String brightnessId, String colorId, String brightness){
+int *getCICSMatrix(String brightnessId, String colorId, String brightness){
     int ans[] = {0, 0, 0, 0};
     HTTPClient http;
     HTTPClient http2;
@@ -73,7 +73,6 @@ int * getCICSMatrix(String brightnessId, String colorId, String brightness){
 
 void setup() {
   Serial.begin(9600);
-
   // WiFi initialization.
   Serial.println("Connecting to WiFi...");
   WiFi.begin(SPMAKER_WIFI_SSID, SPMAKER_WIFI_PASS);
@@ -89,6 +88,7 @@ void setup() {
   // LED initialization.
   Serial.println("Setting up LEDs...");
   ConfigureLEDs();
+  SetScrollingCurrentString("WE ARE OPEN");
 }
 
 void ConfigureLEDs() {
@@ -101,6 +101,12 @@ void ConfigureLEDs() {
   matrix = new FastLED_NeoMatrix(LEDS_STATUS, 32, 16, 1, 1, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
   matrix->setTextWrap(false);
   matrix->begin();
+}
+
+void SetScrollingCurrentString(char *NewString) {
+  free(currString);
+  currString = NewString;
+  currStringLength = strlen(NewString);
 }
 
 void rainbow_wave(uint8_t thisSpeed, uint8_t deltaHue) {     // The fill_rainbow call doesn't support brightness levels.
